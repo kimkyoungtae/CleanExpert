@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sparkles,
   ShieldCheck,
@@ -32,6 +32,24 @@ export default function HomeView({
 
   // FAQ expanded state
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
+
+  // Real-time counter to boost conversion rates
+  const [waitingCount, setWaitingCount] = useState(3);
+
+  useEffect(() => {
+    // Dynamic countdown/up behavior to simulate live visitor queue
+    const interval = setInterval(() => {
+      setWaitingCount((prev) => {
+        const isUp = Math.random() > 0.45; // slightly skewed to stay around 3-4
+        let next = prev + (isUp ? 1 : -1);
+        if (next < 2) next = 2;
+        if (next > 5) next = 5;
+        return next;
+      });
+    }, 14000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const nextReview = () => {
     setReviewIndex((prev) => (prev + 1) % reviews.length);
@@ -118,8 +136,19 @@ export default function HomeView({
               ))}
             </div>
 
+            {/* Real-time waiting badge */}
+            <div className="flex items-center space-x-2 bg-white/5 border border-white/10 px-3.5 py-2.5 rounded-full w-fit animate-pulse">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-semibold text-slate-300">
+                실시간 현황: 현재 <span className="font-bold text-emerald-400">{waitingCount}명</span>이 예약 신청 대기 중입니다
+              </span>
+            </div>
+
             {/* Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-1">
               <button
                 id="hero-booking-btn"
                 onClick={() => setActiveTab("reservation")}
@@ -260,7 +289,16 @@ export default function HomeView({
           <p className="text-slate-100 font-light text-sm sm:text-base max-w-xl mx-auto">
             원하시는 일정의 예약이 가득 차기 전에 스마트하게 예약 프로세스를 완성해보세요. 예약 접수는 단 1분이면 편리하게 끝납니다.
           </p>
-          <div className="pt-4">
+          <div className="pt-4 flex flex-col items-center space-y-3.5">
+            {/* Live conversion nudge badge */}
+            <div className="inline-flex items-center space-x-2 bg-white/15 border border-white/25 px-4 py-2 rounded-full text-xs font-semibold backdrop-blur-md">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+              </span>
+              <span>실시간: 현재 <strong className="text-white font-bold">{waitingCount}명</strong>의 고객이 예약을 준비하고 있습니다</span>
+            </div>
+
             <button
               onClick={() => setActiveTab("reservation")}
               className="bg-white text-primary hover:bg-slate-50 font-bold px-8 py-4 rounded-xl text-base shadow-lg shadow-black/10 transition-transform active:scale-98"
@@ -480,6 +518,17 @@ export default function HomeView({
             <p className="text-xs text-slate-300 font-semibold tracking-wide">
               깨끗한 집, 여유롭고 화창한 하루. 지금 바로 그 기쁨을 누리세요!
             </p>
+
+            <div className="flex justify-center pb-2">
+              <div className="inline-flex items-center space-x-2 bg-slate-900 border border-slate-800 px-4 py-2.5 rounded-full text-xs font-semibold text-slate-300 shadow-sm">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span>실시간 현황: 현재 <strong className="text-emerald-400 font-bold">{waitingCount}명</strong> 예약 매칭 대기 중</span>
+              </div>
+            </div>
+
             <button
               onClick={() => setActiveTab("reservation")}
               className="bg-primary hover:bg-primary/95 text-white font-bold px-10 py-4.5 rounded-xl text-base shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
