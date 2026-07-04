@@ -164,6 +164,33 @@ const DEFAULT_DB = {
   ]
 };
 
+// Helper to ensure default data is present
+function ensureDefaultData(db: any) {
+  if (!db) db = {};
+  if (!db.users) db.users = [];
+  if (!db.bookings) db.bookings = [];
+  if (!db.reviews) db.reviews = [];
+
+  DEFAULT_DB.users.forEach((defUser: any) => {
+    const exists = db.users.some(
+      (u: any) => u.email.toLowerCase() === defUser.email.toLowerCase()
+    );
+    if (!exists) {
+      db.users.push(defUser);
+    }
+  });
+
+  if (db.reviews.length === 0) {
+    db.reviews = [...DEFAULT_DB.reviews];
+  }
+
+  if (db.bookings.length === 0) {
+    db.bookings = [...DEFAULT_DB.bookings];
+  }
+
+  return db;
+}
+
 // Helper function to read database
 function readDB() {
   if (memoryDB) {
@@ -173,11 +200,13 @@ function readDB() {
   try {
     if (fs.existsSync(DB_PATH)) {
       const data = fs.readFileSync(DB_PATH, "utf-8");
-      memoryDB = JSON.parse(data);
-      if (!memoryDB.users) memoryDB.users = [];
-      if (!memoryDB.bookings) memoryDB.bookings = [];
-      if (!memoryDB.reviews) memoryDB.reviews = [];
-      return memoryDB;
+      try {
+        memoryDB = JSON.parse(data);
+        memoryDB = ensureDefaultData(memoryDB);
+        return memoryDB;
+      } catch (parseErr) {
+        console.error("Failed to parse db.json, falling back to default:", parseErr);
+      }
     }
 
     // Try copying from default location in prod
@@ -192,6 +221,7 @@ function readDB() {
           }
           fs.writeFileSync(DB_PATH, data, "utf-8");
           memoryDB = JSON.parse(data);
+          memoryDB = ensureDefaultData(memoryDB);
           return memoryDB;
         } catch (e) {
           console.error("Failed to copy db.json from src to tmp:", e);
